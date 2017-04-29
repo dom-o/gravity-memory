@@ -13,34 +13,68 @@ define(['matter', './utils'], function(Matter, utils) {
       MouseConstraint = Matter.MouseConstraint,
       Mouse = Matter.Mouse,
       Composite = Matter.Composite;
-  var NUM_CARDS= 32,
-      NUM_CARD_GROUPS= 2,
+  var NUM_CARDS= 10,
+      NUM_CARD_GROUPS= 3,
       CARD_WIDTH= 70;
       CARD_HEIGHT= 100,
       DEFAULT_COLLISION= 0x0001;
       COLLS= [0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000],
-      COLORS= ['red', 'black', 'blue', 'purple', 'grey', 'orange', 'green', 'yellow', 'pink', 'brown'];
+      COLORS= [
+        '#000000',
+        '#222034',
+        '#45283C',
+        '#663931',
+        '#8F563B',
+        '#DF7126',
+        '#D9A066',
+        '#EEC39A',
+        '#FBF236',
+        '#99E550',
+        '#6ABE30',
+        '#37946E',
+        '#4B692F',
+        '#524B24',
+        '#323C39',
+        '#3F3F74',
+        '#306082',
+        '#5B6EE1',
+        '#639BFF',
+        '#5FCDE4',
+        '#CBDBFC',
+        '#FFFFFF',
+        '#9BADB7',
+        '#847E87',
+        '#696A6A',
+        '#595652',
+        '#76428A',
+        '#AC3232',
+        '#D95763',
+        '#D77BBA',
+        '#8F974A',
+        '#8A6F30'
+      ];
 
   var engine = Engine.create();
+  // TODO: Scale gravity, number of cards, force of click with difficulty.
   engine.world.gravity.x = 0;
   engine.world.gravity.y = 0.05;
   var mouseConstraint = MouseConstraint.create(engine, {element: canvas});
-  currentCard = -1;
-  compareCard = -1;
+  currentCard = null;
+  compareCard = null;
   deck = [];
   for(i=0; i<NUM_CARDS; i++) {
     setTimeout(function(i) {
-      card = Bodies.rectangle(canvas.width/2, 0, CARD_WIDTH, CARD_HEIGHT);
+      card = Bodies.rectangle(canvas.width/2, canvas.height/2, CARD_WIDTH, CARD_HEIGHT);
+      card.label = i % (NUM_CARDS/2);
 
       card.collisionFilter.category = COLLS[i%NUM_CARD_GROUPS];
       card.collisionFilter.mask = DEFAULT_COLLISION | COLLS[i%NUM_CARD_GROUPS];
 
       deck.push(card);
       World.add(engine.world, card);
-      if(i==5) {console.log(card);}
       velocity= {
-        x: utils.randNum(-4, 4),
-        y: utils.randNum(-10, 0.5)
+        x: utils.randNum(-5, 5),
+        y: utils.randNum(-12, -10)
       };
       Body.setVelocity(card, velocity);
     }, 100*i, i)
@@ -50,18 +84,16 @@ define(['matter', './utils'], function(Matter, utils) {
   ground = [
     // Bodies.rectangle(canvas.width/2, -offset, canvas.width+2*offset, 50, { isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1 }),
     Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }),
-    Bodies.rectangle(canvas.width/2, canvas.height+offset, canvas.width+2*offset, 50, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }),
+    Bodies.rectangle(canvas.width/2, canvas.height+5*CARD_HEIGHT, canvas.width+2*offset, 50, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }),
     Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true })
   ];
   World.add(engine.world, ground);
 
   Events.on(mouseConstraint, 'mouseup', function(event) {
     mousePos = event.mouse.position;
-
-    for(i=0; i<deck.length; i++) {
+    for(i=deck.length-1; i>=0; i--) {
       if(Matter.Bounds.contains(deck[i].bounds, mousePos)) {
         card = deck[i];
-
         minX =0;
         maxX= 0;
         mousePos.x < card.position.x ? maxX= 0.02 : maxX=0;
@@ -69,32 +101,32 @@ define(['matter', './utils'], function(Matter, utils) {
 
         force = {
           x: utils.randNum(minX, maxX),
-          y: -0.1
+          y: -0.15
         };
         Body.applyForce(card, mousePos, force);
+        if(currentCard != null) {
+          compareCard = card;
 
-        if(currentCard != -1) {
-          compareCard = i;
+          if(compareCard.label == currentCard.label && compareCard !== currentCard) {
+            console.log('match! '+ compareCard.label + ' == ' +currentCard.label);
+            World.remove(engine.world, currentCard);
+            World.remove(engine.world, compareCard);
 
-          currentCard%2 === 0
-          ?
-            match = (currentCard+1 == compareCard)
-          :
-            match = (currentCard-1 == compareCard);
-
-          if(match) {
-            // World.remove(engine.world, deck[currentCard]);
-            // World.remove(engine.world, deck[compareCard]);
-            //
-            // deck.splice(currentCard, 1);
-            // deck.splice(compareCard, 1);
+            deck.splice(deck.indexOf(currentCard), 1);
+            deck.splice(deck.indexOf(compareCard), 1);
+            console.log(deck);
+            console.log(Composite.allBodies(engine.world));
           }
-          currentCard = -1;
-          compareCard = -1;
+          else{
+            console.log('no! '+ compareCard.label + ' != ' +currentCard.label);
+          }
+          currentCard = null;
+          compareCard = null;
         }
         else {
-          currentCard = i;
+          currentCard = card;
         }
+        break;
       }
     }
   });
@@ -105,11 +137,12 @@ define(['matter', './utils'], function(Matter, utils) {
     function render() {
       window.requestAnimationFrame(render);
       bodies = Composite.allBodies(engine.world);
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       for(i=0; i<bodies.length; i++) {
         body = bodies[i];
-        ctx.fillStyle = COLORS[body.collisionFilter.category];
+        deck.includes(body) ? ctx.fillStyle = COLORS[i] : ctx.fillStyle = 'black';
+
         ctx.beginPath();
         vertices = body.vertices;
         ctx.moveTo(vertices[0].x, vertices[0].y);
@@ -122,6 +155,11 @@ define(['matter', './utils'], function(Matter, utils) {
         ctx.stroke();
         ctx.fill();
         ctx.closePath();
+
+        ctx.fillStyle = 'white';
+        ctx.font = "50px arial";
+        ctx.textAlign = "center";
+        ctx.fillText(body.label, body.position.x, body.position.y);
       }
     }
   )();
