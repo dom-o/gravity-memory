@@ -61,6 +61,8 @@ define(['matter', './utils'], function(Matter, utils) {
   var mouseConstraint = MouseConstraint.create(engine, {element: canvas});
   currentCard = null;
   compareCard = null;
+  faceUp = [];
+  nullTimer=-1;
   deck = [];
   for(i=0; i<NUM_CARDS; i++) {
     setTimeout(function(i) {
@@ -82,10 +84,10 @@ define(['matter', './utils'], function(Matter, utils) {
 
   offset=25;
   ground = [
-    // Bodies.rectangle(canvas.width/2, -offset, canvas.width+2*offset, 50, { isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1 }),
-    Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }),
-    Bodies.rectangle(canvas.width/2, canvas.height+5*CARD_HEIGHT, canvas.width+2*offset, 50, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }),
-    Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true })
+    Bodies.rectangle(canvas.width/2, -5*CARD_HEIGHT, canvas.width+2*offset, 50, { isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1 }), //TOP
+    Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }), //LEFT
+    Bodies.rectangle(canvas.width/2, canvas.height/*+5*CARD_HEIGHT*/, canvas.width+2*offset, 50, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }), //BOTTOM
+    Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, { friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }) //RIGHT
   ];
   World.add(engine.world, ground);
 
@@ -93,43 +95,79 @@ define(['matter', './utils'], function(Matter, utils) {
     mousePos = event.mouse.position;
     for(i=deck.length-1; i>=0; i--) {
       if(Matter.Bounds.contains(deck[i].bounds, mousePos)) {
+        if(currentCard != null && compareCard != null) {
+          faceUp.splice(faceUp.indexOf(compareCard), 1);
+          faceUp.splice(faceUp.indexOf(currentCard), 1);
+
+          currentCard = null;
+          compareCard = null;
+        }
+        clearTimeout(nullTimer);
+
         card = deck[i];
         minX =0;
         maxX= 0;
         mousePos.x < card.position.x ? maxX= 0.02 : maxX=0;
         mousePos.x > card.position.x ? minX= -0.02 : minX=0;
-
         force = {
           x: utils.randNum(minX, maxX),
           y: -0.15
         };
         Body.applyForce(card, mousePos, force);
+
         if(currentCard != null) {
           compareCard = card;
+          faceUp.push(compareCard);
 
           if(compareCard.label == currentCard.label && compareCard !== currentCard) {
-            console.log('match! '+ compareCard.label + ' == ' +currentCard.label);
-            World.remove(engine.world, currentCard);
-            World.remove(engine.world, compareCard);
+            setTimeout(function(currentCard, compareCard) {
+              World.remove(engine.world, currentCard);
+              World.remove(engine.world, compareCard);
 
-            deck.splice(deck.indexOf(currentCard), 1);
-            deck.splice(deck.indexOf(compareCard), 1);
-            console.log(deck);
-            console.log(Composite.allBodies(engine.world));
+              deck.splice(deck.indexOf(currentCard), 1);
+              deck.splice(deck.indexOf(compareCard), 1);
+
+              faceUp.splice(faceUp.indexOf(compareCard), 1);
+              faceUp.splice(faceUp.indexOf(currentCard), 1);
+            }, 500, currentCard, compareCard);
+
+            faceUp.push(currentCard);
+            faceUp.push(compareCard);
           }
-          else{
-            console.log('no! '+ compareCard.label + ' != ' +currentCard.label);
-          }
-          currentCard = null;
-          compareCard = null;
+
+          nullTimer = setTimeout(function() {
+            faceUp.splice(faceUp.indexOf(compareCard), 1);
+            faceUp.splice(faceUp.indexOf(currentCard), 1);
+
+            currentCard = null;
+            compareCard = null;
+          }, 3*1000);
         }
         else {
           currentCard = card;
+          faceUp.push(currentCard);
         }
         break;
       }
     }
   });
+
+  // Events.on(engine, 'collisionStart', function(event) {
+  //   pairs = event.pairs;
+  //   for(i=0; i<pairs.length; i++) {
+  //     pair = [pairs[i].bodyA, pairs[i].bodyB];
+  //     if(pair.includes(ground[2])) {
+  //       if(deck.includes(pair[0])) {
+  //         World.remove(engine.world, pair[0]);
+  //         deck.splice(deck.indexOf(pair[0]), 1);
+  //       }
+  //       else if(deck.includes(pair[1])) {
+  //         World.remove(engine.world, pair[1]);
+  //         deck.splice(deck.indexOf(pair[1]), 1);
+  //       }
+  //     }
+  //   }
+  // });
 
   Engine.run(engine);
 
@@ -157,9 +195,14 @@ define(['matter', './utils'], function(Matter, utils) {
         ctx.closePath();
 
         ctx.fillStyle = 'white';
-        ctx.font = "50px arial";
-        ctx.textAlign = "center";
-        ctx.fillText(body.label, body.position.x, body.position.y);
+
+        if(faceUp.includes(body)) {
+          // ctx.fillStyle = 'red';
+          ctx.font = "50px arial";
+          ctx.textAlign = "center";
+          ctx.fillText(body.label, body.position.x, body.position.y);
+        }
+
       }
     }
   )();
