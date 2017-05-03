@@ -1,4 +1,47 @@
 define({
+  constants: {
+    MAX_NUM_CARDS: 32,
+    MIN_NUM_CARDS: 2,
+    NUM_CARD_GROUPS: 10,
+    CARD_WIDTH: 70,
+    CARD_HEIGHT: 100,
+    DEFAULT_COLLISION: 0x0001,
+    COLLS: [0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000],
+    COLORS: [
+      '#000000',
+      '#222034',
+      '#45283C',
+      '#663931',
+      '#8F563B',
+      '#DF7126',
+      '#D9A066',
+      '#EEC39A',
+      '#FBF236',
+      '#99E550',
+      '#6ABE30',
+      '#37946E',
+      '#4B692F',
+      '#524B24',
+      '#323C39',
+      '#3F3F74',
+      '#306082',
+      '#5B6EE1',
+      '#639BFF',
+      '#5FCDE4',
+      '#CBDBFC',
+      '#FFFFFF',
+      '#9BADB7',
+      '#847E87',
+      '#696A6A',
+      '#595652',
+      '#76428A',
+      '#AC3232',
+      '#D95763',
+      '#D77BBA',
+      '#8F974A',
+      '#8A6F30'
+    ]
+  },
   randInt: function (min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -7,5 +50,18 @@ define({
   },
   randNum: function(min, max) {
     return (Math.random() * (max - min)) + min;
+  },
+  drawByVertices: function(vertices, ctx) {
+    ctx.beginPath();
+    ctx.moveTo(vertices[0].x, vertices[0].y);
+    for(j=0; j<vertices.length; j++) {
+      ctx.lineTo(vertices[j].x, vertices[j].y);
+    }
+    ctx.lineTo(vertices[0].x, vertices[0].y);
+
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fill();
+    ctx.closePath();
   }
 });
