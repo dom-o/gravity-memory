@@ -59,7 +59,7 @@ define(['matter', './utils'], function(Matter, utils) {
         mousePos.x > card.position.x ? minX= -0.02 : minX=0;
         force = {
           x: utils.randNum(minX, maxX),
-          y: -0.15
+          y: -0.4
         };
         Body.applyForce(card, mousePos, force);
 
