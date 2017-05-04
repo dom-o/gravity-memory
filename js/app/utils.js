@@ -1,10 +1,13 @@
-define({
+define(['matter'], function(Matter) {
+  return {
   constants: {
     MAX_NUM_CARDS: 32,
     MIN_NUM_CARDS: 2,
+    VIEW_HEIGHT: 800,
+    VIEW_WIDTH: 700,
     NUM_CARD_GROUPS: 10,
-    CARD_WIDTH: 70,
-    CARD_HEIGHT: 100,
+    CARD_WIDTH: 84,
+    CARD_HEIGHT: 120,
     DEFAULT_COLLISION: 0x0001,
     COLLS: [0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000],
     COLORS: [
@@ -64,4 +67,5 @@ define({
     ctx.fill();
     ctx.closePath();
   }
+}
 });

@@ -1,8 +1,6 @@
 define(['matter', './utils'], function(Matter, utils) {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
 
   var Engine = Matter.Engine,
       World = Matter.World,
@@ -12,18 +10,17 @@ define(['matter', './utils'], function(Matter, utils) {
       Events = Matter.Events,
       MouseConstraint = Matter.MouseConstraint,
       Mouse = Matter.Mouse,
-      Composite = Matter.Composite
+      Composite = Matter.Composite,
       constants = utils.constants;
 
+  canvas.width = constants.VIEW_WIDTH;
+  canvas.height = constants.VIEW_HEIGHT;
   var engine = Engine.create();
-  // TODO: Scale gravity, number of cards, force of click with difficulty.
-  // TODO: Refine how you display cards that are face-up. Maybe add sprites?
   engine.world.gravity.x = 0;
-  engine.world.gravity.y = 0.05;
+  engine.world.gravity.y = 0.08;
   var mouseConstraint = MouseConstraint.create(engine, {element: canvas});
   currentCard = null;
   compareCard = null;
-  faceUp = [];
   nullTimer=-1;
   levelFailure = false;
   numCards = constants.MIN_NUM_CARDS;
@@ -32,27 +29,15 @@ define(['matter', './utils'], function(Matter, utils) {
   World.add(engine.world, deck);
 
   for(i=0; i<numCards; i++) {
-    setTimeout(function(i) {
-      card = Bodies.rectangle(canvas.width/2, canvas.height/2, constants.CARD_WIDTH, constants.CARD_HEIGHT);
-      card.label = i % (numCards/2);
-
-      card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
-      card.collisionFilter.mask = constants.DEFAULT_COLLISION | constants.COLLS[i%constants.NUM_CARD_GROUPS];
-      Composite.add(deck, card);
-      velocity= {
-        x: utils.randNum(-5, 5),
-        y: utils.randNum(-15, -8)
-      };
-      Body.setVelocity(card, velocity);
-    }, 100*i, i);
+    setTimeout(genCard, 100*i, i, deck);
   }
 
   offset=25;
   ground = [
-    Bodies.rectangle(canvas.width/2, -5*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'top ground', isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1 }), //TOP
-    Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'left ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }), //LEFT
-    Bodies.rectangle(canvas.width/2, canvas.height+3*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'bottom ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }), //BOTTOM
-    Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'right ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true }) //RIGHT
+    Bodies.rectangle(canvas.width/2, -1.5*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'top ground', isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, render:{fillStyle:'transparent'} }), //TOP
+    Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'left ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }), //LEFT
+    Bodies.rectangle(canvas.width/2, canvas.height+1.5*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'bottom ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }), //BOTTOM
+    Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'right ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }) //RIGHT
   ];
   World.add(engine.world, ground);
 
@@ -63,9 +48,6 @@ define(['matter', './utils'], function(Matter, utils) {
       card = cards[i];
       if(Matter.Bounds.contains(card.bounds, mousePos)) {
         if(currentCard != null && compareCard != null) {
-          faceUp.splice(faceUp.indexOf(compareCard), 1);
-          faceUp.splice(faceUp.indexOf(currentCard), 1);
-
           currentCard = null;
           compareCard = null;
         }
@@ -83,32 +65,21 @@ define(['matter', './utils'], function(Matter, utils) {
 
         if(currentCard != null) {
           compareCard = card;
-          faceUp.push(compareCard);
 
           if(compareCard.label == currentCard.label && compareCard !== currentCard) {
             setTimeout(function(currentCard, compareCard) {
               Composite.remove(deck, currentCard);
               Composite.remove(deck, compareCard);
-
-              faceUp.splice(faceUp.indexOf(compareCard), 1);
-              faceUp.splice(faceUp.indexOf(currentCard), 1);
             }, 500, currentCard, compareCard);
-
-            faceUp.push(currentCard);
-            faceUp.push(compareCard);
           }
 
           nullTimer = setTimeout(function() {
-            faceUp.splice(faceUp.indexOf(compareCard), 1);
-            faceUp.splice(faceUp.indexOf(currentCard), 1);
-
             currentCard = null;
             compareCard = null;
           }, 3*1000);
         }
         else {
           currentCard = card;
-          faceUp.push(currentCard);
         }
         break;
       }
@@ -140,23 +111,11 @@ define(['matter', './utils'], function(Matter, utils) {
       play some animation for card removal
     */
     if(Composite.allBodies(deck).length == 0) {
-      if (constants.MAX_NUM_CARDS - numCards >= 2 && !levelFailure) {
+      if (!levelFailure) {
         numCards += 2;
       }
       for(i=0; i<numCards; i++) {
-        setTimeout(function(i) {
-          card = Bodies.rectangle(canvas.width/2, canvas.height/2, constants.CARD_WIDTH, constants.CARD_HEIGHT);
-          card.label = i % (numCards/2);
-
-          card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
-          card.collisionFilter.mask = constants.DEFAULT_COLLISION | constants.COLLS[i%constants.NUM_CARD_GROUPS];
-          Composite.add(deck, card);
-          velocity= {
-            x: utils.randNum(-5, 5),
-            y: utils.randNum(-15, -8)
-          };
-          Body.setVelocity(card, velocity);
-        }, 100*i, i);
+        setTimeout(genCard, 100*i, i, deck);
       }
     }
   });
@@ -171,15 +130,13 @@ define(['matter', './utils'], function(Matter, utils) {
 
       for(i=0; i<bodies.length; i++) {
         body = bodies[i];
-        Composite.allBodies(deck).includes(body) ? ctx.fillStyle = constants.COLORS[i] : ctx.fillStyle = 'black';
+        ctx.fillStyle = body.render.fillStyle;
 
         utils.drawByVertices(body.vertices, ctx);
 
-        ctx.fillStyle = 'red';
-
-        if(faceUp.includes(body)) {
-          // ctx.fillStyle = 'red';
-          ctx.font = "50px arial";
+        if(body===compareCard || body===currentCard) {
+          ctx.fillStyle = 'red';
+          ctx.font = "56px arial";
           ctx.textAlign = "center";
           ctx.fillText(body.label, body.position.x, body.position.y);
         }
@@ -187,4 +144,18 @@ define(['matter', './utils'], function(Matter, utils) {
       }
     }
   )();
+
+  function genCard(i, deck) {
+    card = Bodies.rectangle(constants.VIEW_WIDTH/2, 3*constants.VIEW_HEIGHT/4, constants.CARD_WIDTH, constants.CARD_HEIGHT);
+    card.label = i % (numCards/2);
+    card.render.fillStyle = constants.COLORS[i%constants.COLORS.length];
+    card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
+    card.collisionFilter.mask = constants.DEFAULT_COLLISION | constants.COLLS[i%constants.NUM_CARD_GROUPS];
+    Composite.add(deck, card);
+    velocity= {
+      x: utils.randNum(-5, 5),
+      y: utils.randNum(-15, -10)
+    };
+    Body.setVelocity(card, velocity);
+  }
 });
