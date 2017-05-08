@@ -24,6 +24,9 @@ define(['matter', './utils'], function(Matter, utils) {
   nullTimer=-1;
   levelFailure = false;
   numCards = constants.MIN_NUM_CARDS;
+  pulse = Math.round(numCards/10);
+  defaultCardSprite = 'C:\\Users\\mdomonic\\Desktop\\School\\Code\\card-pickup\\img\\card_0.png' //'..\\..\\img\\card_0.png';
+  textures = {};
 
   deck = Composite.create({label: 'deck'});
   World.add(engine.world, deck);
@@ -117,6 +120,21 @@ define(['matter', './utils'], function(Matter, utils) {
       for(i=0; i<numCards; i++) {
         setTimeout(genCard, 100*i, i, deck);
       }
+      pulse = Math.round(numCards/10);
+    }
+  });
+
+  document.addEventListener('keyup', function(e) {
+    if(e.keyCode === 32) {
+      console.log(pulse);
+      if(pulse > 0) {
+        cards = Composite.allBodies(engine.world);
+        for(i=0; i<cards.length; i++) {
+          force = utils.applyForceTowardPt(cards[i].position.x, cards[i].position.y, ground[2].position.x, ground[2].position.y, 0.5);
+          Body.applyForce(cards[i], ground[2].position, force);
+        }
+        pulse--;
+      }
     }
   });
 
@@ -130,25 +148,70 @@ define(['matter', './utils'], function(Matter, utils) {
 
       for(i=0; i<bodies.length; i++) {
         body = bodies[i];
-        ctx.fillStyle = body.render.fillStyle;
 
-        utils.drawByVertices(body.vertices, ctx);
-
-        if(body===compareCard || body===currentCard) {
-          ctx.fillStyle = 'red';
-          ctx.font = "56px arial";
-          ctx.textAlign = "center";
-          ctx.fillText(body.label, body.position.x, body.position.y);
+        if (body.render.sprite && body.render.sprite.texture) {
+          sprite = body.render.sprite;
+          if(body===compareCard || body===currentCard) {
+            // part sprite
+            var texture = getTexture(textures, sprite.texture);
+          }
+          else {
+            var texture = getTexture(textures, defaultCardSprite);
+          }
+          drawTexture(ctx, body, texture, sprite);
         }
-
+        else {
+          ctx.fillStyle = body.render.fillStyle;
+          utils.drawByVertices(body.vertices, ctx);
+          if(body===compareCard || body===currentCard) {
+            ctx.fillStyle = 'red';
+            ctx.font = "56px arial";
+            ctx.textAlign = "center";
+            ctx.fillText(body.label, body.position.x, body.position.y);
+          }
+        }
       }
     }
   )();
 
+  function drawTexture(ctx, body, texture, sprite) {
+    ctx.translate(body.position.x, body.position.y);
+    ctx.rotate(body.angle);
+
+    ctx.drawImage(
+      texture,
+      texture.width * -sprite.xOffset * sprite.xScale,
+      texture.height * -sprite.yOffset * sprite.yScale,
+      texture.width * sprite.xScale,
+      texture.height * sprite.yScale
+    );
+    // revert translation, hopefully faster than save / restore
+    ctx.rotate(-body.angle);
+    ctx.translate(-body.position.x, -body.position.y);
+  }
+
+  function getTexture (textures, imagePath) {
+    var image = textures[imagePath];
+
+    if (image)
+      return image;
+
+    image = textures[imagePath] = new Image();
+    image.src = imagePath;
+
+    return image;
+  }
+
   function genCard(i, deck) {
-    card = Bodies.rectangle(constants.VIEW_WIDTH/2, 3*constants.VIEW_HEIGHT/4, constants.CARD_WIDTH, constants.CARD_HEIGHT);
-    card.label = i % (numCards/2);
-    card.render.fillStyle = constants.COLORS[i%constants.COLORS.length];
+    card = Bodies.rectangle(constants.VIEW_WIDTH/2, 3*constants.VIEW_HEIGHT/4, constants.CARD_WIDTH, constants.CARD_HEIGHT, {
+      label: i % (numCards/2),
+      render: {
+        fillStyle: constants.COLORS[i%constants.COLORS.length],
+        sprite: {
+          texture: 'C:\\Users\\mdomonic\\Desktop\\School\\Code\\card-pickup\\img\\card_'+((i%(numCards/2)) +1)+'.png'/*'../../img/card_' + i + '.png'*/
+        }
+      },
+    });
     card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
     card.collisionFilter.mask = constants.DEFAULT_COLLISION | constants.COLLS[i%constants.NUM_CARD_GROUPS];
     Composite.add(deck, card);

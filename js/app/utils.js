@@ -45,6 +45,30 @@ define(['matter'], function(Matter) {
       '#8A6F30'
     ]
   },
+  vectorSetMag: function(x, y, scale) {
+    // console.log('vectorSetMag'+x + ', ' + y + ', '+scale);
+    v = this.vectorNormalize(x, y);
+    return {
+      x: v.x * scale,
+      y: v.y * scale
+    };
+  },
+  applyForceTowardPt: function(x1, y1, x2, y2, mag) {
+    x= x1 - x2;
+    y= y1 - y2;
+    return this.vectorSetMag(x, y, mag);
+  },
+  vectorMag: function(x, y) {
+    return Math.sqrt((x*x) + (y*y));
+  },
+  vectorNormalize: function(x, y) {
+    m= this.vectorMag(x, y);
+    m > 0 ?
+      r= {x:x/m, y:y/m}
+    :
+      r= {x:x, y:y};
+    return r;
+  },
   randInt: function (min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
