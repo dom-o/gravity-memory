@@ -1,6 +1,7 @@
 define(['matter', './utils'], function(Matter, utils) {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
+  canvas.onselectstart = function () { return false; }
 
   var Engine = Matter.Engine,
       World = Matter.World,
@@ -59,11 +60,11 @@ define(['matter', './utils'], function(Matter, utils) {
 
         minX =0;
         maxX= 0;
-        mousePos.x < card.position.x ? maxX= 0.02 : maxX=0;
-        mousePos.x > card.position.x ? minX= -0.02 : minX=0;
+        mousePos.x < card.position.x ? maxX= constants.MOUSE_X_FORCE : maxX=0;
+        mousePos.x > card.position.x ? minX= -constants.MOUSE_X_FORCE : minX=0;
         force = {
           x: utils.randNum(minX, maxX),
-          y: -0.4
+          y: constants.MOUSE_Y_FORCE
         };
         Body.applyForce(card, mousePos, force);
 
@@ -227,7 +228,7 @@ define(['matter', './utils'], function(Matter, utils) {
       render: {
         fillStyle: constants.COLORS[i%constants.COLORS.length],
         sprite: {
-          texture: 'img\\card_'+((i%(numCards/2)) +1)+'.png'
+          texture: 'img/card_'+((i%(numCards/2)) +1)+'.png'
         }
       },
     });

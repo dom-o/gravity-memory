@@ -3,11 +3,13 @@ define(['matter'], function(Matter) {
   constants: {
     MAX_NUM_CARDS: 32,
     MIN_NUM_CARDS: 2,
-    VIEW_HEIGHT: 1000,
-    VIEW_WIDTH: 800,
+    VIEW_HEIGHT: 1000*.75,
+    VIEW_WIDTH: 800*.75,
     NUM_CARD_GROUPS: 10,
-    CARD_WIDTH: 105,
-    CARD_HEIGHT: 150,
+    CARD_WIDTH: 105*.60,
+    CARD_HEIGHT: 150*.60,
+    MOUSE_X_FORCE: 0.02,
+    MOUSE_Y_FORCE: -0.15,
     IMAGES: {
       pulseIconPath: 'img/pulseIcon.png',
       cardBackPath: 'img/card_0.png'
