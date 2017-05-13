@@ -188,6 +188,7 @@ define(['matter', './utils'], function(Matter, utils) {
         );
       }
 
+      ctx.globalAlpha = 0.3;
       ctx.fillStyle = 'red';
       ctx.font = "56px arial";
       ctx.textAlign = "right";
