@@ -24,9 +24,10 @@ define(['matter', './utils'], function(Matter, utils) {
   nullTimer=-1;
   levelFailure = false;
   numCards = constants.MIN_NUM_CARDS;
+  cardsMatched = 0;
   pulse = Math.round(numCards/10);
-  defaultCardSprite = 'C:\\Users\\mdomonic\\Desktop\\School\\Code\\card-pickup\\img\\card_0.png' //'..\\..\\img\\card_0.png';
   textures = {};
+  background = 'black'
 
   deck = Composite.create({label: 'deck'});
   World.add(engine.world, deck);
@@ -71,6 +72,7 @@ define(['matter', './utils'], function(Matter, utils) {
 
           if(compareCard.label == currentCard.label && compareCard !== currentCard) {
             setTimeout(function(currentCard, compareCard) {
+              cardsMatched += 2;
               Composite.remove(deck, currentCard);
               Composite.remove(deck, compareCard);
             }, 500, currentCard, compareCard);
@@ -115,18 +117,19 @@ define(['matter', './utils'], function(Matter, utils) {
     */
     if(Composite.allBodies(deck).length == 0) {
       if (!levelFailure) {
-        numCards += 2;
+        numCards+2 <= constants.MAX_NUM_CARDS ? numCards += 2 : numCards;
       }
+      pulse = Math.round(numCards/10);
+      levelFailure = false;
+      cardsMatched = 0;
       for(i=0; i<numCards; i++) {
         setTimeout(genCard, 100*i, i, deck);
       }
-      pulse = Math.round(numCards/10);
     }
   });
 
   document.addEventListener('keyup', function(e) {
     if(e.keyCode === 32) {
-      console.log(pulse);
       if(pulse > 0) {
         cards = Composite.allBodies(engine.world);
         for(i=0; i<cards.length; i++) {
@@ -146,6 +149,9 @@ define(['matter', './utils'], function(Matter, utils) {
       bodies = Composite.allBodies(engine.world);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       for(i=0; i<bodies.length; i++) {
         body = bodies[i];
 
@@ -156,7 +162,7 @@ define(['matter', './utils'], function(Matter, utils) {
             var texture = getTexture(textures, sprite.texture);
           }
           else {
-            var texture = getTexture(textures, defaultCardSprite);
+            var texture = getTexture(textures, constants.IMAGES.cardBackPath);
           }
           drawTexture(ctx, body, texture, sprite);
         }
@@ -171,13 +177,26 @@ define(['matter', './utils'], function(Matter, utils) {
           }
         }
       }
+
+      for(i=0; i<Math.round(constants.MAX_NUM_CARDS/10); i++) {
+        i<pulse ? ctx.globalAlpha = 0.9 : ctx.globalAlpha = 0.2;
+        pulseTexture = getTexture(textures, constants.IMAGES.pulseIconPath);
+        ctx.drawImage(
+          pulseTexture,
+          40+60*i, 30, 40, 40
+        );
+      }
+
+      ctx.fillStyle = 'red';
+      ctx.font = "56px arial";
+      ctx.textAlign = "right";
+      ctx.fillText(cardsMatched + '/' +numCards, canvas.width-50, 70);
     }
   )();
 
   function drawTexture(ctx, body, texture, sprite) {
     ctx.translate(body.position.x, body.position.y);
     ctx.rotate(body.angle);
-
     ctx.drawImage(
       texture,
       texture.width * -sprite.xOffset * sprite.xScale,
@@ -208,7 +227,7 @@ define(['matter', './utils'], function(Matter, utils) {
       render: {
         fillStyle: constants.COLORS[i%constants.COLORS.length],
         sprite: {
-          texture: 'C:\\Users\\mdomonic\\Desktop\\School\\Code\\card-pickup\\img\\card_'+((i%(numCards/2)) +1)+'.png'/*'../../img/card_' + i + '.png'*/
+          texture: 'img\\card_'+((i%(numCards/2)) +1)+'.png'
         }
       },
     });

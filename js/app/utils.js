@@ -8,6 +8,10 @@ define(['matter'], function(Matter) {
     NUM_CARD_GROUPS: 10,
     CARD_WIDTH: 105,
     CARD_HEIGHT: 150,
+    IMAGES: {
+      pulseIconPath: 'img\\pulseIcon.png',
+      cardBackPath: 'img\\card_0.png'
+    },
     DEFAULT_COLLISION: 0x0001,
     COLLS: [0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000],
     COLORS: [
