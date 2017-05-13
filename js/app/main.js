@@ -34,12 +34,12 @@ define(['matter', './utils'], function(Matter, utils) {
   World.add(engine.world, deck);
 
   for(i=0; i<numCards; i++) {
-    setTimeout(genCard, 100*i, i, deck);
+    setTimeout(genCard, 100*i, i, deck, textures);
   }
 
   offset=25;
   ground = [
-    Bodies.rectangle(canvas.width/2, -1.5*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'top ground', isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, render:{fillStyle:'transparent'} }), //TOP
+    Bodies.rectangle(canvas.width/2, -7*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'top ground', isStatic: true, friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, render:{fillStyle:'transparent'} }), //TOP
     Bodies.rectangle(-offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'left ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }), //LEFT
     Bodies.rectangle(canvas.width/2, canvas.height+1.5*constants.CARD_HEIGHT, canvas.width+2*offset, 50, {label:'bottom ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }), //BOTTOM
     Bodies.rectangle(canvas.width+offset, canvas.height/2, 50, 3*canvas.height+2*offset, {label:'right ground', friction: 0, frictionAir: 0, frictionStatic: 0, restitution: 1, isStatic: true, render:{fillStyle:'transparent'} }) //RIGHT
@@ -124,7 +124,7 @@ define(['matter', './utils'], function(Matter, utils) {
       levelFailure = false;
       cardsMatched = 0;
       for(i=0; i<numCards; i++) {
-        setTimeout(genCard, 100*i, i, deck);
+        setTimeout(genCard, 100*i, i, deck, textures);
       }
     }
   });
@@ -134,7 +134,7 @@ define(['matter', './utils'], function(Matter, utils) {
       if(pulse > 0) {
         cards = Composite.allBodies(engine.world);
         for(i=0; i<cards.length; i++) {
-          force = utils.applyForceTowardPt(cards[i].position.x, cards[i].position.y, ground[2].position.x, ground[2].position.y, 0.5);
+          force = utils.applyForceTowardPt(cards[i].position.x, cards[i].position.y, ground[2].position.x, ground[2].position.y, constants.SPACE_FORCE);
           Body.applyForce(cards[i], ground[2].position, force);
         }
         pulse--;
@@ -222,7 +222,7 @@ define(['matter', './utils'], function(Matter, utils) {
     return image;
   }
 
-  function genCard(i, deck) {
+  function genCard(i, deck, textures) {
     card = Bodies.rectangle(constants.VIEW_WIDTH/2, 3*constants.VIEW_HEIGHT/4, constants.CARD_WIDTH, constants.CARD_HEIGHT, {
       label: i % (numCards/2),
       render: {
@@ -232,8 +232,10 @@ define(['matter', './utils'], function(Matter, utils) {
         }
       },
     });
-    card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
-    card.collisionFilter.mask = constants.DEFAULT_COLLISION | Body.nextCategory();
+    category = Body.nextCategory();
+    card.collisionFilter.category = category;
+    card.collisionFilter.mask = constants.DEFAULT_COLLISION;// | category;
+    getTexture(textures, card.render.sprite.texture);
     Composite.add(deck, card);
     velocity= {
       x: utils.randNum(-5, 5),

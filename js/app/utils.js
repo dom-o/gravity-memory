@@ -10,6 +10,7 @@ define(['matter'], function(Matter) {
     CARD_HEIGHT: 150*.60,
     MOUSE_X_FORCE: 0.02,
     MOUSE_Y_FORCE: -0.15,
+    SPACE_FORCE: 0.2,
     IMAGES: {
       pulseIconPath: 'img/pulseIcon.png',
       cardBackPath: 'img/card_0.png'
