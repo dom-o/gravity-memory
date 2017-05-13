@@ -233,7 +233,7 @@ define(['matter', './utils'], function(Matter, utils) {
       },
     });
     card.collisionFilter.category = constants.COLLS[i%constants.NUM_CARD_GROUPS];
-    card.collisionFilter.mask = constants.DEFAULT_COLLISION | constants.COLLS[i%constants.NUM_CARD_GROUPS];
+    card.collisionFilter.mask = constants.DEFAULT_COLLISION | Body.nextCategory();
     Composite.add(deck, card);
     velocity= {
       x: utils.randNum(-5, 5),
