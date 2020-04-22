@@ -1,16 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script data-main="js/app.js" src="js/require.js"></script>
+  <title>Domonic Milesi</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="author" content="Domonic Milesi" />
+
+  <link rel="stylesheet" type="text/css" href="../../css/style.css" />
+  <script data-main="js/app.js" src="js/require.js"></script>
 </head>
-<body style="background: #1a1a1a">
+<body>
+  <header>
+    <h1><a href="../../index.html">Domonic Milesi</a></h1>
+    <nav>
+      <a href="../../projects.html">Projects</a>
+    </nav>
+  </header>
   <center>
-    <canvas id="canvas" width=800 height=800 style="border: 1px solid"></canvas>
-    <p style="color: #666">
-      Click to stop cards from falling.
-      Match like cards to clear them.
-      Spacebar to bump all cards.
+    <p style="text-align: left">
+      Click cards to stop them from falling.
+      Match like cards to clear them.<br/>
+      'q' to knock all cards upwards.<br/>
+      '+' to increase the number of cards.<br/>
+      '-' to decrease the number of cards.<br/>
+      'w' if you don't like the pictures.<br/>
     </p>
+    <canvas id="canvas" style="border: 1px solid"></canvas>
   </center>
 </body>
 
