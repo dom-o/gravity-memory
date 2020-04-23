@@ -132,7 +132,7 @@ define(['matter', './utils'], function(Matter, utils) {
         }
         pulse--;
       }
-    } else if (e.key === '=') {
+    } else if (e.key === '+') {
       resetLevel(2)
     } else if (e.key === '-') {
       resetLevel(-2)
@@ -237,7 +237,7 @@ define(['matter', './utils'], function(Matter, utils) {
 
   function genCard(i, deck, textures) {
     card = Bodies.rectangle(constants.VIEW_WIDTH/2, constants.VIEW_HEIGHT/2, constants.CARD_WIDTH, constants.CARD_HEIGHT, {
-      restitution: 1,
+      // restitution: 1,
       frictionStatic: 0,
       friction: 0,
       label: i % (numCards/2),
@@ -255,7 +255,7 @@ define(['matter', './utils'], function(Matter, utils) {
     Composite.add(deck, card);
     velocity= {
       x: Common.random(-5, 5),
-      y: Common.random(-15, -10)
+      y: Common.random(-11.25, -7.5)
     };
     Body.setVelocity(card, velocity);
   }
