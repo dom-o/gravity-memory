@@ -29,7 +29,8 @@ define(['matter', './utils'], function(Matter, utils) {
       pulse = utils.getPulse(numCards),
       textures = {},
       background = 'black',
-      showSprites = true
+      showSprites = true,
+      timeoutIDs = []
 
   const offset=10;
   const ground = [
@@ -47,7 +48,7 @@ define(['matter', './utils'], function(Matter, utils) {
   World.add(engine.world, shower)
 
   for(let i=0; i<numCards; i++) {
-    setTimeout(genCard, 100*i, i, deck, textures);
+    timeoutIDs.push(setTimeout(genCard, 100*i, i, deck, textures));
   }
 
   Events.on(mouseConstraint, 'mouseup', function(event) {
@@ -125,9 +126,9 @@ define(['matter', './utils'], function(Matter, utils) {
   document.addEventListener('keyup', function(e) {
     if(e.key === "q") {
       if(pulse > 0) {
-        cards = Composite.allBodies(deck);
+        const cards = Composite.allBodies(deck);
         for(let i=0; i<cards.length; i++) {
-          force = utils.applyForceTowardPt(cards[i].position.x, cards[i].position.y, ground[2].position.x, ground[2].position.y, constants.SPACE_FORCE);
+          const force = utils.applyForceTowardPt(cards[i].position.x, cards[i].position.y, ground[2].position.x, ground[2].position.y, constants.SPACE_FORCE);
           Body.applyForce(cards[i], ground[2].position, force);
         }
         pulse--;
@@ -146,14 +147,14 @@ define(['matter', './utils'], function(Matter, utils) {
   (
     function render() {
       window.requestAnimationFrame(render);
-      bodies = Composite.allBodies(engine.world);
+      const bodies = Composite.allBodies(engine.world);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.globalAlpha = 1;
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       for(i=0; i<bodies.length; i++) {
-        body = bodies[i];
+        let body = bodies[i];
 
         if (body.render.sprite && body.render.sprite.texture && showSprites) {
           sprite = body.render.sprite;
@@ -222,6 +223,10 @@ define(['matter', './utils'], function(Matter, utils) {
   }
 
   function resetLevel(card_increase) {
+    while(timeoutIDs.length > 0) {
+      id = timeoutIDs.shift()
+      clearTimeout(id)
+    }
     cardsMatched = 0
     Composite.clear(deck)
     currentCard = null
@@ -231,7 +236,7 @@ define(['matter', './utils'], function(Matter, utils) {
     }
     pulse = utils.getPulse(numCards)
     for(let i=0; i<numCards; i++) {
-      setTimeout(genCard, 100*i, i, deck, textures);
+      timeoutIDs.push(setTimeout(genCard, 100*i, i, deck, textures));
     }
   }
 
@@ -244,7 +249,7 @@ define(['matter', './utils'], function(Matter, utils) {
       render: {
         fillStyle: "white",
         sprite: {
-          texture: 'img/card_'+((i%(numCards/2)) +1)+'.png'
+          texture: 'images/gravity-memory/card_'+((i%(numCards/2)) +1)+'.png'
         },
       },
       collisionFilter: {
