@@ -249,7 +249,7 @@ define(['matter', './utils'], function(Matter, utils) {
       render: {
         fillStyle: "white",
         sprite: {
-          texture: 'images/gravity-memory/card_'+((i%(numCards/2)) +1)+'.png'
+          texture: 'img/card_'+((i%(numCards/2)) +1)+'.png'
         },
       },
       collisionFilter: {
