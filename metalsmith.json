@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    { "metalsmith-markdown": {} },
+    { "metalsmith-include": {} },
+    { "metalsmith-discover-partials": {} },
+    { "metalsmith-layouts": {} }
+  ]
+}

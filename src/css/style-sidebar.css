@@ -1,0 +1,41 @@
+.sidebar {
+  text-align: left;
+  padding: 2rem 0rem;
+  background-color: #38204b;
+}
+@media (min-width: 48em) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    max-width: 18rem;
+    width: 20%;
+    text-align: left;
+  }
+}
+.sidebar-nav {
+  margin-bottom: 1rem;
+}
+.sidebar-nav-item {
+  display: block;
+}
+.sidebar a {
+  text-decoration: none;
+}
+.sidebar a:focus, a:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 48em) {
+  .content {
+    max-width: 48rem;
+    margin-left: 21%;
+    margin-right: 2rem;
+  }
+}
+@media (min-width: 90em) {
+  .content {
+    margin-left: 18.9rem;
+  }
+}

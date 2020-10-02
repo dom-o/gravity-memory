@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>
+      {{#if title }}
+        {{title}} -
+      {{/if }}
+      domonicmilesi.com
+    </title>
+
+    <meta charset="utf-8">
+    <meta name="author" content="Domonic Milesi" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <link rel="shortcut icon" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css" />
+    {{#if sidebar }}
+    <link rel="stylesheet" href="css/style-sidebar.css"/>
+    {{/if }}
+
+    <script src="js/matter.min.js" defer></script>
+    <script src="js/utils.js" defer></script>
+    <script src="js/main.js" defer></script>
+
+    {{#if custom_style }}
+      <style>
+        {{ custom_style }}
+      </style>
+    {{/if}}
+  </head>
+
+  <body>
+    {{#if sidebar }}
+    {{> sidebar data.fundamentals}}
+    {{/if}}
+    <main class="content container">
+      <h1>{{title}}</h1>
+      {{#if writeup }}
+      {{{ writeup }}}
+      {{else}}
+      <!-- link writeup from elsewhere here -->
+      <!-- <small>Read more about this project <a>here</a>.</small> -->
+      {{/if}}
+
+      {{{contents}}}
+
+    </main>
+    {{#unless sidebar }}
+      <footer style="padding:1rem 2rem; margin-top:2rem; background-color:black; color:#fff;">
+        Made by <a style="color:#FFDC00; font-weight:bold;" href="https://domonicmilesi.com/">Domonic Milesi</a>
+      </footer>
+    {{/unless}}
+  </body>
+</html>
